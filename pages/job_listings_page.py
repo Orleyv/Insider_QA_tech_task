@@ -1,9 +1,7 @@
-from pickle import EMPTY_LIST
 import time
 from selenium.common import NoSuchElementException
 from selenium.webdriver import ActionChains
 from selenium.webdriver.support import expected_conditions as EC
-
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 
@@ -19,7 +17,7 @@ class JobListingsPage:
     LIST_ITEM = (By.CLASS_NAME, "position-list-item")
     ITEM_LOCATION = (By.CLASS_NAME, "position-location")
     ITEM_DEPARTMENT = (By.CLASS_NAME, "position-department")
-    VIEW_ROLE = (By.XPATH, "/html/body/section[3]/div/div/div[2]/div[1]/div/a")
+    VIEW_ROLE = (By.CSS_SELECTOR, "div.position-list-item:nth-child(1) > div:nth-child(1) > a:nth-child(4)")
 
 
     def __init__(self, driver):
@@ -27,6 +25,9 @@ class JobListingsPage:
 
 
     def apply_filters(self):
+        WebDriverWait(self.driver, 40).until(
+            lambda driver: driver.execute_script("return document.readyState") == "complete"
+        )
 
         WebDriverWait(self.driver, 10).until(
             EC.presence_of_element_located(self.LOCATION_FILTER)
@@ -56,20 +57,28 @@ class JobListingsPage:
             return False
 
     def check_list_items(self, location, department):
-        time.sleep(15)
+        WebDriverWait(self.driver, 40).until(
+            lambda driver: driver.execute_script("return document.readyState") == "complete"
+        )
+
         items = self.driver.find_elements(*self.LIST_ITEM)
-        print(f"list items:{items}")
         for item in items:
             item_location = item.find_element(*self.ITEM_LOCATION)
             item_department = item.find_element(*self.ITEM_DEPARTMENT)
-            if location not in item_location or department not in item_department:
-                print(f"location:{item_location}, department{item_department}")
+            if location not in item_location.text or department not in item_department.text:
                 return False
-            else:
-                print(f"location:{item_location}, department{item_department}")
         return True
 
+
     def click_view_role(self):
-        WebDriverWait(self.driver, 10).until(
-            EC.visibility_of_element_located(self.VIEW_ROLE)
-        ).click()
+
+        element = self.driver.find_element(*self.VIEW_ROLE)
+
+        # Scroll to the element using JavaScript
+        self.driver.execute_script("arguments[0].scrollIntoView(true);", element)
+        time.sleep(2)
+
+        actions = ActionChains(self.driver)
+        actions.move_to_element(element).perform()
+
+        element.click()

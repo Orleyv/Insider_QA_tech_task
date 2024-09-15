@@ -5,7 +5,7 @@ from pages.home_page import HomePage
 from pages.careers_page import CareersPage
 from pages.careers_qa_page import CareersQAPage
 from pages.job_listings_page import JobListingsPage
-
+from pages.lever_application_form import ApplicationForm
 
 
 @pytest.mark.parametrize("browser", ["chrome", "firefox"])
@@ -40,37 +40,13 @@ def test_insider_careers(browser):
 
         # Step 4: Check that all jobs’ Position contains “Quality Assurance”, Department
         # contains “Quality Assurance”, Location contains “Istanbul, Turkey”
-        assert job_listing_page.check_list_items(location="Istanbul, Turkey", department="Quality Aswsurance"), "There is incorrect location or department"
+        assert job_listing_page.check_list_items(location="Istanbul, Turkey", department="Quality Assurance"), "There is incorrect location or department"
 
         # Step 5: Click “View Role” button and check that this action redirects us to Lever
         # Application form page
-
-        # job_listing_page.click_view_role()
-
-
-
-
-
-
-
-        # Step 2: Verify Careers sections
-        # careers_page = CareersPage(driver)
-        # sections = careers_page.are_sections_present()
-        # assert sections["locations"], "Locations section is not displayed"
-        # assert sections["teams"], "Teams section is not displayed"
-        # assert sections["life_at_insider"], "Life at Insider section is not displayed"
-        #
-        # # Step 3: Navigate to QA Jobs and Filter
-        # careers_page.navigate_to_qa_jobs()
-        # job_listings_page = JobListingsPage(driver)
-        # job_listings_page.filter_jobs("Istanbul, Turkey", "Quality Assurance")
-        #
-        # # Verify Job Listings
-        # job_listings = job_listings_page.get_job_listings()
-        # assert job_listings, "No job listings found"
-        # for job in job_listings:
-        #     assert "Quality Assurance" in job.text, "Job does not contain 'Quality Assurance'"
-        #     assert "Istanbul, Turkey" in job.text, "Job location is not 'Istanbul, Turkey'"
+        job_listing_page.click_view_role()
+        application_form = ApplicationForm()
+        assert "https://jobs.lever.co/useinsider/" in application_form.page_url(), "This is not the https://jobs.lever.co/useinsider/ page"
 
     except Exception as e:
         capture_screenshot(driver, "test_insider_careers", browser)
