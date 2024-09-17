@@ -45,8 +45,9 @@ def test_insider_careers(browser):
         # Step 5: Click “View Role” button and check that this action redirects us to Lever
         # Application form page
         job_listing_page.click_view_role()
-        application_form = ApplicationForm()
-        assert "https://jobs.lever.co/useinsider/" in application_form.page_url(), "This is not the https://jobs.lever.co/useinsider/ page"
+        job_listing_page.check_new_tab()
+        application_form = ApplicationForm(driver)
+        assert "https://jobs.lever.co/useinsider/" in application_form.page_url(), f"This is not the https://jobs.lever.co/useinsider/ page"
 
     except Exception as e:
         capture_screenshot(driver, "test_insider_careers", browser)

@@ -18,13 +18,15 @@ class JobListingsPage:
     ITEM_LOCATION = (By.CLASS_NAME, "position-location")
     ITEM_DEPARTMENT = (By.CLASS_NAME, "position-department")
     VIEW_ROLE = (By.CSS_SELECTOR, "div.position-list-item:nth-child(1) > div:nth-child(1) > a:nth-child(4)")
+    ALL_LOADED = (By.XPATH, "//*[@id='select2-filter-by-department-container' and contains(text(),'Quality Assurance')]")
+    ELEMENT_TO_HOVER_OVER = (By.XPATH, "/html/body/section[3]/div/div/div[2]/div")
 
 
     def __init__(self, driver):
         self.driver = driver
 
 
-    def apply_filters(self):
+    def apply_filters1(self):
         WebDriverWait(self.driver, 40).until(
             lambda driver: driver.execute_script("return document.readyState") == "complete"
         )
@@ -44,6 +46,23 @@ class JobListingsPage:
         WebDriverWait(self.driver, 10).until(
             EC.visibility_of_element_located(self.DEPARTMENT)
         ).click()
+
+    def apply_filters(self):
+
+        wait = WebDriverWait(self.driver, 30)
+
+        while len(self.driver.find_elements(*self.ALL_LOADED)) < 1:
+            time.sleep(5)
+
+        location_dropdown = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, '.select2-selection--single')))
+        location_dropdown.click()
+
+        # Select a specific location (e.g., Istanbul) from the dropdown
+        location_option = wait.until(
+            EC.element_to_be_clickable((By.XPATH, "//li[contains(text(),'Istanbul, Turkey')]")))
+        location_option.click()
+        self.driver.implicitly_wait(10)
+
 
 
     def check_job_list(self):
@@ -76,9 +95,24 @@ class JobListingsPage:
 
         # Scroll to the element using JavaScript
         self.driver.execute_script("arguments[0].scrollIntoView(true);", element)
-        time.sleep(2)
-
-        actions = ActionChains(self.driver)
-        actions.move_to_element(element).perform()
+        while not element.is_displayed():
+            self.driver.execute_script("window.scrollBy(0, 500);")  # Scroll down
+            time.sleep(1)
+            try:
+                element_to_hover_over = self.driver.find_element(*self.ELEMENT_TO_HOVER_OVER)
+                action = ActionChains(self.driver)
+                action.move_to_element(element_to_hover_over).perform()
+            except:
+                pass
 
         element.click()
+        time.sleep(5)
+
+    def check_new_tab(self):
+
+        # Get a list of all open window handles
+        windows = self.driver.window_handles
+
+        # Switch to the new window (the last one in the list)
+        self.driver.switch_to.window(windows[-1])
+
